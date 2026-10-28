@@ -1,0 +1,6 @@
+export function analyseFasta(input:string){
+ if(!input.trim())throw Error('Add at least one FASTA record.');if(input.length>100000)throw Error('Use an example of at most 100,000 characters.');
+ const records:{name:string;sequence:string}[]=[];let current:typeof records[number]|undefined;
+ for(const raw of input.split(/\r?\n/)){const line=raw.trim();if(!line)continue;if(line.startsWith('>')){const name=line.slice(1).trim();if(!name)throw Error('Each record needs a header name.');if(records.some(r=>r.name===name))throw Error('Use unique record headers.');current={name,sequence:''};records.push(current);}else{if(!current)throw Error('FASTA must start with a > header.');const seq=line.replace(/\s/g,'').toUpperCase();if(!/^[ACGTRYSWKMBDHVN]+$/.test(seq))throw Error('Use DNA IUPAC symbols only: A C G T R Y S W K M B D H V N.');current.sequence+=seq;}}
+ return records.map(r=>{if(!r.sequence)throw Error(`Record ${r.name} has no sequence.`);const bases:Record<string,number>={A:0,C:0,G:0,T:0,N:0};for(const b of r.sequence)bases[b]=(bases[b]||0)+1;const canonical=bases.A+bases.C+bases.G+bases.T;return {name:r.name,length:r.sequence.length,canonical,ambiguous:r.sequence.length-canonical,g:bases.G,c:bases.C,gc:canonical?Math.round((bases.G+bases.C)/canonical*10000)/100:null,bases};});
+}

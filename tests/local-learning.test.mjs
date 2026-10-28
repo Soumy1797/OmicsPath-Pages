@@ -1,0 +1,7 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readProgress,assessLocal,progressKey} from '../lib/local-learning.ts';
+function memory(){const data=new Map();return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};}
+test('completion persists, prerequisites enforced, rewards only once',()=>{const s=memory();assert.throws(()=>assessLocal(s,{lessonId:'files',answers:['0','5']}),/previous/);assert.equal(assessLocal(s,{lessonId:'question',answers:['1','2']}).earned,true);assert.equal(assessLocal(s,{lessonId:'question',answers:['1','2']}).earned,false);assert.equal(assessLocal(s,{lessonId:'files',answers:['0','5']}).earned,true);assert.equal(readProgress(s).length,2);});
+test('wrong answers and diagnostics never award completion',()=>{const s=memory();assert.equal(assessLocal(s,{lessonId:'question',answers:['0','0']}).saved,false);assert.equal(assessLocal(s,{lessonId:'python',answers:['12','20'],mode:'diagnostic'}).saved,false);assert.deepEqual(readProgress(s),[]);});
+test('storage failure never reports a save; corrupt data not overwritten',()=>{const s=memory();s.setItem=()=>{throw Error('Storage blocked')};assert.throws(()=>assessLocal(s,{lessonId:'question',answers:['1','2']}),/Storage blocked/);const corrupt=memory();corrupt.setItem(progressKey,'not json');assert.throws(()=>readProgress(corrupt));assert.equal(corrupt.getItem(progressKey),'not json');});

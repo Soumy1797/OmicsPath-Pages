@@ -1,0 +1,12 @@
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import Home from '../app/page';
+import About from '../app/dayhoff/page';
+import '../app/globals.css';
+import '../app/game.css';
+import '../app/campaign.css';
+import '../app/reference.css';
+import '../app/science-theme.css';
+import '../app/commander.css';
+const about = new URLSearchParams(location.search).get('page') === 'about';
+createRoot(document.getElementById('root')!).render(<React.StrictMode><div className="pages-storage-notice" role="note">GitHub Pages edition · Progress stays in this browser. Export your record to keep a copy. Assessments are practice, not certification.</div>{about ? <About/> : <Home/>}</React.StrictMode>);

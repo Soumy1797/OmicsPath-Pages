@@ -1,0 +1,3 @@
+import {getChatGPTUser} from '@/app/chatgpt-auth';
+import {database} from '@/lib/storage';
+export async function GET(){const user=await getChatGPTUser();if(!user)return Response.json({error:'Sign in to save your learning progress.'},{status:401});try{const result=await database().prepare('SELECT lesson_id, completed_at, score FROM learning_progress WHERE user_id = ? ORDER BY completed_at').bind(user.userId).all();return Response.json({progress:result.results},{headers:{'Cache-Control':'no-store'}});}catch(e){console.error('Progress load failed',e);return Response.json({error:'Your progress could not be loaded. Please retry.'},{status:503});}}
